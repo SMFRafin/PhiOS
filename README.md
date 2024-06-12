@@ -1,14 +1,17 @@
-****PhiOS**** 
+# PhiOS
 
-A Simple CLI 32 bit OS.
+PhiOS is a simple CLI 32-bit operating system.
 
-**To Run:**
-1. Install qemu -> sudo apt install qemu
-2. Makefile -> make
-3. Run build.sh -> sh build.sh
+## How to Run
 
-**Screenshots**
-![image](https://github.com/SMFRafin/PhiOS/assets/109092327/538a2b4d-f5c2-4be8-9c2d-e255c19d0436)
-
-**Note**
-**Still WIP**
+1. Install QEMU:
+   ```bash
+   sudo apt install qemu
+2. Use the Makefile to build
+    ```bash
+    make
+3. Run build.sh
+   ```bash
+   sh build.sh
+  
+   

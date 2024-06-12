@@ -15,5 +15,6 @@ PhiOS is a simple CLI 32-bit operating system.
    sh build.sh
 
 # References:
-https://www.youtube.com/watch?v=5FnrtmJXsdM&list=PLT7NbkyNWaqajsw8Xh7SP9KJwjfpP8TNX\n
+https://www.youtube.com/watch?v=5FnrtmJXsdM&list=PLT7NbkyNWaqajsw8Xh7SP9KJwjfpP8TNX
+
 https://www.osdev.org/wiki/

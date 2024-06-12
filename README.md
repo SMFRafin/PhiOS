@@ -1,4 +1,5 @@
-****PhiOS********
+****PhiOS**** 
+
 A Simple CLI 32 bit OS. 
 **To Run: **
 1. Install qemu -> sudo apt install qemu

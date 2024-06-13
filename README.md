@@ -1,6 +1,6 @@
 # PhiOS
 
-PhiOS is a simple CLI 32-bit operating system.
+PhiOS is a simple CLI 16-bit operating system.
 
 ## How to Run
 

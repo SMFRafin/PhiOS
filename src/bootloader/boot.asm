@@ -8,7 +8,7 @@ mov bx, 0x0
 mov dh, 0x0  ; Head number
 mov dl, 0x0  ; Drive number
 mov ch, 0x0  ; Track number
-mov cl, 0x02  ; Start reading at sector 2
+mov cl, 0x02  ; File table at sector 2
 
 read_filetable:
     mov ah, 0x02  ; BIOS read sector function
@@ -24,7 +24,7 @@ mov bx, 0x0
 mov dh, 0x0  ; Head number
 mov dl, 0x0  ; Drive number
 mov ch, 0x0  ; Track number
-mov cl, 0x03  ; Start reading at sector 3
+mov cl, 0x03  ; Kernel at sector 3
 
 read_kernel:
     mov ah, 0x02  ; BIOS read sector function

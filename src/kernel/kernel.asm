@@ -1,8 +1,8 @@
 org 0x0000 
 
 ; Set video mode
-mov ah, 0x00
-mov al, 0x03
+mov ah,0x00
+mov al,0x03 ; 80x25 text mode
 int 0x10
 
 ; Set color
@@ -13,12 +13,6 @@ int 0x10
 
 ; Print kernel messages
 mov si, kernel_msg
-call print_string
-mov si, cmd_msg
-call print_string
-mov si, reboot_msg
-call print_string
-mov si, filetable_msg
 call print_string
 
 jmp cmd_input
@@ -31,52 +25,121 @@ error:
 
 ; Get input
 cmd_input:
+    mov si, cmd_prompt
+    call print_string
     mov di, cmds
     call get_input
     jmp $
 
 ; Get input function
 get_input:
+    xor cx, cx  ; Clear CX to use as character counter
+
+.input_loop:
     mov ah, 0x00 ; Read from keyboard
     int 0x16 ; Keyboard interrupt
 
+    cmp al, 0x08  ; Check if backspace
+    je .handle_backspace
+
+    cmp al, 0x0D  ; Check if enter
+    je .process_input
+
+    
+
     mov ah, 0x0E ; Print character
-    cmp al, 0x0D  ; If pressed enter
-    je process_commands ; Jump execute commands
     int 0x10 ; Print character
-    mov [di], al ; Store character
-    inc di ; Increment character
-    jmp get_input ; Loop
+    stosb  ; Store character and increment DI
+    inc cx  ; Increment character count
+    jmp .input_loop
+
+.handle_backspace:
+    test cx, cx  ; Check if we're at the start of the input
+    jz .input_loop  ; If so, ignore backspace
+
+    dec di  ; Move back one character in the buffer
+    dec cx  ; Decrement character count
+
+    mov ah, 0x0E
+    mov al, 0x08  ; Backspace
+    int 0x10
+    mov al, ' '   ; Space (to erase the character)
+    int 0x10
+    mov al, 0x08  ; Backspace again (to move cursor back)
+    int 0x10
+
+    jmp .input_loop
+
+.process_input:
+    mov byte [di], 0 ; Null-terminate the input string
+    mov ah, 0x0E  ; Print character
+    mov al, 0x0D  ; Carriage return
+    int 0x10      
+    mov al, 0x0A  ; Line feed
+    int 0x10
+    jmp process_commands
 
 process_commands: 
-    mov byte [di], 0 ; Move null terminator to end of input
-    mov si, cmds ; Display input
+    mov si, cmds ; Point to start of input
     call execute_command ; Execute command
     jmp cmd_input ; Loop
 
 execute_command:
-    mov al, [si] ; Get character
-    cmp al, 'r' ; Compare character to r
-    je reboot ; If equal, jump to reboot 
-    cmp al, 'R' ; Compare character to R
-    je reboot ; If equal, jump to reboot
-    cmp al, 'c' ; Compare character to c
-    je cmd      ; If equal, jump to cmd    
-    cmp al,'C'   ; Compare character to C
-    je cmd       ; If equal, jump to cmd
-    cmp al, 'f'  ; Compare character to f  
-    je filetable  ; If equal, jump to filetable
-    cmp al, 'F'
-    je filetable
-    jne error ; If not equal, jump to error
+    ; Compare with "reboot"
+    mov di, reboot_cmd
+    call strcmp
+    jc reboot
+
+    ; Compare with "dirs"
+    mov di, dirs_cmd
+    call strcmp
+    jc filetable
+
+    ; Compare with "cls"
+    mov di, cls_cmd
+    call strcmp
+    jc clear_screen
+    ; If no match, it's an error
+    jmp error
+
+; String comparison function
+; SI = input string, DI = command to compare
+; Carry flag set if strings match
+strcmp:
+    push si
+    push di
+.loop:
+    mov al, [si]
+    mov bl, [di]
+    cmp al, bl
+    jne .not_equal
+    cmp al, 0
+    je .equal
+    inc si
+    inc di
+    jmp .loop
+.not_equal:
+    clc  ; Clear carry flag (no match)
+    jmp .done
+.equal:
+    stc  ; Set carry flag (match)
+.done:
+    pop di
+    pop si
+    ret
 
 reboot:
     jmp 0xFFFF:0x0000 ; Reset vector
 
-cmd: 
-    mov si, cmd_prompt ; Display prompt
-    call print_string
-    jmp cmd_input ;Loop 
+clear_screen:
+    mov ah, 0x00  ; Set video mode function
+    mov al, 0x03  ; Mode 3 (80x25 text mode)
+    int 0x10      ; Call BIOS video interrupt
+    mov ah, 0x02  ; Set cursor position function
+    xor bh, bh    ; Page number (0)
+    xor dx, dx    ; Row 0, column 0
+    int 0x10      ; Call BIOS video interrupt
+    jmp cmd_input
 
 filetable:
     ; Load the filetable segment
@@ -103,13 +166,15 @@ print_char:
 print_done:
     ret
 
-kernel_msg db '-------------------------------------------', 0xA, 0xD,0x20,0x20,0x20,0x20,'Welcome to PhiOS! ', 0xA, 0xD, \
-'-------------------------------------------', 0xA, 0xD, 0
-cmd_msg db 'Type cmd to run command prompt ', 0, 10, 13
+kernel_msg db '-------------------------------------------------------------------------------', 0xA, 0xD,0x20,0x20,0x20,0x20,\
+'Welcome to PhiOS! ', 0xA, 0xD, \
+'-------------------------------------------------------------------------------', 0xA, 0xD, 0
 invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
-cmd_prompt db 10,13,'Command prompt running',10,13,'|>', 0
-reboot_msg db 10, 13, 'Press R to reboot', 0xA, 0xD, 0, 10, 13
-filetable_msg db 'Press F for File Explorer', 10, 13, 0
-cmds: db '', 0
+cmd_prompt db 10,13,'|>:', 0
+reboot_cmd db 'reboot', 0
+cmd_cmd db 'cmd', 0
+dirs_cmd db 'dirs', 0
+cls_cmd db 'cls', 0
+cmds: times 64 db 0 ; Make space for 64 characters of input
 
 times 512-($-$$) db 0

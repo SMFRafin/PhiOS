@@ -12,7 +12,7 @@ mov bl, 0x01
 int 0x10
 
 ; Print kernel messages
-mov si, kernel_msg
+mov si, kernel_msg1
 call print_string
 
 jmp cmd_input
@@ -132,14 +132,7 @@ reboot:
     jmp 0xFFFF:0x0000 ; Reset vector
 
 clear_screen:
-    mov ah, 0x00  ; Set video mode function
-    mov al, 0x03  ; Mode 3 (80x25 text mode)
-    int 0x10      ; Call BIOS video interrupt
-    mov ah, 0x02  ; Set cursor position function
-    xor bh, bh    ; Page number (0)
-    xor dx, dx    ; Row 0, column 0
-    int 0x10      ; Call BIOS video interrupt
-    jmp cmd_input
+    
 
 filetable:
     ; Load the filetable segment
@@ -150,6 +143,8 @@ filetable:
     ; Call the filetable code
     call 0x1000:0x0000
     jmp cmd_input
+
+
 
 print_string:
     mov ah, 0x0E ; Print character
@@ -166,15 +161,18 @@ print_char:
 print_done:
     ret
 
-kernel_msg db '-------------------------------------------------------------------------------', 0xA, 0xD,0x20,0x20,0x20,0x20,\
-'Welcome to PhiOS! ', 0xA, 0xD, \
-'-------------------------------------------------------------------------------', 0xA, 0xD, 0
-invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
+
+kernel_msg1 db ' _         _   __',10,13
+kernel_msg2 db '|_) |_  o / \ (_  ',10,13
+kernel_msg3 db '|   | | | \_/ __) ',10,13,0
+
 cmd_prompt db 10,13,'|>:', 0
 reboot_cmd db 'reboot', 0
 cmd_cmd db 'cmd', 0
 dirs_cmd db 'dirs', 0
 cls_cmd db 'cls', 0
+invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
+
 cmds: times 64 db 0 ; Make space for 64 characters of input
 
-times 512-($-$$) db 0
+times 1024-($-$$) db 0

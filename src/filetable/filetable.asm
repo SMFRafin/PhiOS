@@ -11,9 +11,9 @@ mov bh, 0x00
 mov bl, 0x01
 int 0x10
 
-
-mov si, msg
-call print_string
+start:
+    mov si, msg
+    call print_string
 
 
 ; Get input
@@ -37,8 +37,6 @@ get_input:
 
     cmp al, 0x0D  ; Check if enter
     je .process_input
-
-    
 
     mov ah, 0x0E ; Print character
     int 0x10 ; Print character
@@ -88,6 +86,10 @@ execute_command:
     call strcmp
     jc show_files
 
+    ;Compare with "cls"
+    mov di, clear_screen_cmd
+    call strcmp
+    jc clear_screen
     ; If no match, it's an error
     jmp error
 
@@ -135,6 +137,21 @@ return_to_kernel:
     mov es, ax
 
     call 0x2000:0x0000
+clear_screen:
+; Set video mode
+    mov ax, 0x0003 ; Clear screen
+    int 0x10
+    ;Reset video mode
+    mov ah,0x00
+    mov al,0x03 ; 80x25 text mode
+    int 0x10
+
+    ; Set color
+    mov ah, 0x0B
+    mov bh, 0x00
+    mov bl, 0x01
+    int 0x10
+    jmp start
 
 print_string:
     mov ah, 0x0E
@@ -158,6 +175,7 @@ cmds: times 64 db 0
 cmd_return_to_home db 'ret', 0
 cmd_prompt db 10,13,'|>:', 0
 show_files_cmd db 'ls', 0
+clear_screen_cmd db 'cls', 0
 files db 10,13,'main.asm',0x20,'hello.txt', 10,13,0
 
 times 512-($-$$) db 0

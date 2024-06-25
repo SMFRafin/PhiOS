@@ -12,8 +12,11 @@ mov bl, 0x01
 int 0x10
 
 ; Print kernel messages
-mov si, kernel_msg1
-call print_string
+start:
+    mov si, kernel_msg1
+    call print_string
+    mov si, help_msg
+    call print_string
 
 jmp cmd_input
 
@@ -99,6 +102,11 @@ execute_command:
     mov di, cls_cmd
     call strcmp
     jc clear_screen
+
+    ; Compare with "help"
+    mov di, help_cmd
+    call strcmp
+    jc help
     ; If no match, it's an error
     jmp error
 
@@ -106,18 +114,18 @@ execute_command:
 ; SI = input string, DI = command to compare
 ; Carry flag set if strings match
 strcmp:
-    push si
+    push si 
     push di
 .loop:
-    mov al, [si]
-    mov bl, [di]
-    cmp al, bl
-    jne .not_equal
-    cmp al, 0
-    je .equal
-    inc si
+    mov al, [si] ;get the input character
+    mov bl, [di] ;get the command character
+    cmp al, bl   ;compare the characters
+    jne .not_equal ;if they don't match, jump to .not_equal
+    cmp al, 0    ;check if we've reached the end of the input string
+    je .equal    ; if so, jump to .equal
+    inc si       ; increment both pointers
     inc di
-    jmp .loop
+    jmp .loop    ; keep iterating   
 .not_equal:
     clc  ; Clear carry flag (no match)
     jmp .done
@@ -131,8 +139,22 @@ strcmp:
 reboot:
     jmp 0xFFFF:0x0000 ; Reset vector
 
+; Clear screen    
 clear_screen:
-    
+; Set video mode
+    mov ax, 0x0003 ; Clear screen
+    int 0x10
+    ;Reset video mode
+    mov ah,0x00
+    mov al,0x03 ; 80x25 text mode
+    int 0x10
+
+    ; Set color
+    mov ah, 0x0B
+    mov bh, 0x00
+    mov bl, 0x01
+    int 0x10
+    jmp start
 
 filetable:
     ; Load the filetable segment
@@ -144,8 +166,10 @@ filetable:
     call 0x1000:0x0000
     jmp cmd_input
 
-
-
+help:
+    mov si, help_info
+    call print_string
+    jmp cmd_input
 print_string:
     mov ah, 0x0E ; Print character
     mov bh, 0x0 ; Set page
@@ -161,17 +185,21 @@ print_char:
 print_done:
     ret
 
-
+;Data and variables
 kernel_msg1 db ' _         _   __',10,13
 kernel_msg2 db '|_) |_  o / \ (_  ',10,13
 kernel_msg3 db '|   | | | \_/ __) ',10,13,0
-
+help_msg db 10,13,'type help for list of commands',10,13, 0
 cmd_prompt db 10,13,'|>:', 0
 reboot_cmd db 'reboot', 0
 cmd_cmd db 'cmd', 0
 dirs_cmd db 'dirs', 0
 cls_cmd db 'cls', 0
+help_cmd db 'help', 0
+date_cmd db 'date', 0
 invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
+help_info db 10,13,'reboot - Reboot the system',10,13,'dirs - File table',10,13,\
+'cls - Clear screen',10,13,'help - Help',10,13,'ret - Return to home', 10,13,'ls - List files', 0
 
 cmds: times 64 db 0 ; Make space for 64 characters of input
 

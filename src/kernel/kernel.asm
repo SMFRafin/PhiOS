@@ -8,7 +8,7 @@ int 0x10
 ; Set color
 mov ah, 0x0B
 mov bh, 0x00
-mov bl, 0x01
+mov bl, 0x09
 int 0x10
 
 ; Print kernel messages
@@ -152,7 +152,7 @@ clear_screen:
     ; Set color
     mov ah, 0x0B
     mov bh, 0x00
-    mov bl, 0x01
+    mov bl, 0x09
     int 0x10
     jmp start
 

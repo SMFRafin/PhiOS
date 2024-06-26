@@ -107,6 +107,11 @@ execute_command:
     mov di, help_cmd
     call strcmp
     jc help
+
+    ;Compare with phi -v
+    mov di, version_cmd
+    call strcmp
+    jc version
     ; If no match, it's an error
     jmp error
 
@@ -166,10 +171,17 @@ filetable:
     call 0x1000:0x0000
     jmp cmd_input
 
+
 help:
     mov si, help_info
     call print_string
     jmp cmd_input
+
+version:
+    mov si,vinfo
+    call print_string
+    jmp cmd_input
+
 print_string:
     mov ah, 0x0E ; Print character
     mov bh, 0x0 ; Set page
@@ -193,14 +205,15 @@ help_msg db 10,13,'type help for list of commands',10,13, 0
 cmd_prompt db 10,13,'|>:', 0
 reboot_cmd db 'reboot', 0
 cmd_cmd db 'cmd', 0
+vinfo db 10,13,'0.0.1',0
 dirs_cmd db 'dirs', 0
 cls_cmd db 'cls', 0
 help_cmd db 'help', 0
-date_cmd db 'date', 0
+version_cmd db 'phi -v', 0
 invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
-help_info db 10,13,'reboot - Reboot the system',10,13,'dirs - File table',10,13,\
+help_info: db 10,13,'reboot - Reboot the system',10,13,'dirs - File table',10,13,\
 'cls - Clear screen',10,13,'help - Help',10,13,'ret - Return to home', 10,13,'ls - List files', 0
 
 cmds: times 64 db 0 ; Make space for 64 characters of input
 
-times 1024-($-$$) db 0
+times 2048-($-$$) db 0

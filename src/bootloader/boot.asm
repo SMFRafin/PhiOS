@@ -12,7 +12,7 @@ mov cl, 0x02  ; File table at sector 2
 
 read_filetable:
     mov ah, 0x02  ; BIOS read sector function
-    mov al, 0x01  ; Number of sectors to read
+    mov al, 32  ; Number of sectors to read
     int 0x13  ; Disk read interrupt
     jc read_filetable  ; Retry if there's an error
 
@@ -28,7 +28,7 @@ mov cl, 0x03  ; Kernel at sector 3
 
 read_kernel:
     mov ah, 0x02  ; BIOS read sector function
-    mov al, 0x01  ; Number of sectors to read
+    mov al, 32  ; Number of sectors to read
     int 0x13  ; Disk read interrupt
     jc read_kernel  ; Retry if there's an error
 

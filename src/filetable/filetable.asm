@@ -8,7 +8,7 @@ int 0x10
 ; Set color
 mov ah, 0x0B
 mov bh, 0x00
-mov bl, 0x01
+mov bl, 0x09
 int 0x10
 
 start:
@@ -76,7 +76,7 @@ process_commands:
     jmp cmd_input ; Loop
 
 execute_command:
-    ; Compare with "home"
+    ; Compare with "ret"
     mov di, cmd_return_to_home
     call strcmp
     jc return_to_kernel
@@ -149,7 +149,7 @@ clear_screen:
     ; Set color
     mov ah, 0x0B
     mov bh, 0x00
-    mov bl, 0x01
+    mov bl, 0x09
     int 0x10
     jmp start
 

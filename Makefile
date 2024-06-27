@@ -41,6 +41,7 @@ $(KERNEL_BIN): $(KERNEL_DIR)/kernel.asm
 $(FILETABLE_BIN): $(FILETABLE_DIR)/filetable.asm
 	$(ASM) $< -f bin -o $@
 
+
 # Clean up build files
 clean:
 	rm -f $(BUILD_DIR)/*

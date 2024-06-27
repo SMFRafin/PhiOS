@@ -49,7 +49,6 @@ get_input:
     je .process_input
 
     
-
     mov ah, 0x0E ; Print character
     int 0x10 ; Print character
     stosb  ; Store character and increment DI
@@ -112,6 +111,11 @@ execute_command:
     mov di, version_cmd
     call strcmp
     jc version
+
+    ;Compare with phi -phi
+    mov di,phi_phi_cmd
+    call strcmp
+    jc phi_phi_cmd_dis
     ; If no match, it's an error
     jmp error
 
@@ -182,6 +186,11 @@ version:
     call print_string
     jmp cmd_input
 
+phi_phi_cmd_dis:
+    mov si,phi_msg1
+    call print_string
+    jmp cmd_input
+
 print_string:
     mov ah, 0x0E ; Print character
     mov bh, 0x0 ; Set page
@@ -201,18 +210,30 @@ print_done:
 kernel_msg1 db ' _         _   __',10,13
 kernel_msg2 db '|_) |_  o / \ (_  ',10,13
 kernel_msg3 db '|   | | | \_/ __) ',10,13,0
-help_msg db 10,13,'type help for list of commands',10,13, 0
+help_msg db 10,13,'type phi -help for list of commands',10,13, 0
 cmd_prompt db 10,13,'|>:', 0
 reboot_cmd db 'reboot', 0
-cmd_cmd db 'cmd', 0
 vinfo db 10,13,'0.0.1',0
 dirs_cmd db 'dirs', 0
 cls_cmd db 'cls', 0
-help_cmd db 'help', 0
+help_cmd db 'phi -help', 0
 version_cmd db 'phi -v', 0
+phi_phi_cmd db 'phi -phi',0
 invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
 help_info: db 10,13,'reboot - Reboot the system',10,13,'dirs - File table',10,13,\
-'cls - Clear screen',10,13,'help - Help',10,13,'ret - Return to home', 10,13,'ls - List files', 0
+'cls - Clear screen',10,13,'help - Help',10,13,'ret - Return to home', 10,13,'ls - List files'10,13'phi -v - Version', 0      
+phi_msg1 db 10,13,\
+            '       :===+@@@@+===-',10,13      
+phi_msg2 db '     :-=+***@@@@*+++=-:',10,13      
+phi_msg3 db '  =%@@%+:. .@@@@:  :=%@@#=',10,13   
+phi_msg4 db ' %@@@#     .@@@@:     #@@@%',10,13  
+phi_msg5 db '=@@@@-     .@@@@:     -@@@@+',10,13 
+phi_msg6 db '+@@@@:     .@@@@:     :@@@@+',10,13 
+phi_msg7 db '.@@@@*     .@@@@:     +@@@@.',10,13 
+phi_msg8 db ' .*@@@#-   .@@@@:   :*@@@*.',10,13  
+phi_msg9 db '    :=+*#***@@@@#**##*=:',10,13          
+phi_msg11 db '      :===+@@@@+===-',10,13,0        
+                              
 
 cmds: times 64 db 0 ; Make space for 64 characters of input
 

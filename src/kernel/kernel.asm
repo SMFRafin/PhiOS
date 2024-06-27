@@ -1,3 +1,4 @@
+;Kernel code
 org 0x0000 
 
 ; Set video mode
@@ -220,8 +221,16 @@ help_cmd db 'phi -help', 0
 version_cmd db 'phi -v', 0
 phi_phi_cmd db 'phi -phi',0
 invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
-help_info: db 10,13,'reboot - Reboot the system',10,13,'dirs - File table',10,13,\
-'cls - Clear screen',10,13,'help - Help',10,13,'ret - Return to home', 10,13,'ls - List files'10,13'phi -v - Version', 0      
+help_info:
+    db 10,13,'reboot - Reboot the system',10,13
+    db 'dirs - File table',10,13
+    db 'cls - Clear screen',10,13
+    db 'help - Help',10,13
+    db 'ret - Return to home',10,13
+    db 'ls - List files',10,13
+    db 'phi -v - Version',10,13
+    db 'phi -phi - Display PhiOS logo',0
+
 phi_msg1 db 10,13,\
             '       :===+@@@@+===-',10,13      
 phi_msg2 db '     :-=+***@@@@*+++=-:',10,13      
@@ -233,8 +242,6 @@ phi_msg7 db '.@@@@*     .@@@@:     +@@@@.',10,13
 phi_msg8 db ' .*@@@#-   .@@@@:   :*@@@*.',10,13  
 phi_msg9 db '    :=+*#***@@@@#**##*=:',10,13          
 phi_msg11 db '      :===+@@@@+===-',10,13,0        
-                              
-
 cmds: times 64 db 0 ; Make space for 64 characters of input
 
 times 2048-($-$$) db 0

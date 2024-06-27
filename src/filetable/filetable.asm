@@ -1,3 +1,4 @@
+;filetable.asm
 org 0x0000
 
 ; Set video mode

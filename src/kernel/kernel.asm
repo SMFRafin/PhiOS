@@ -1,6 +1,7 @@
 ;Kernel code
 org 0x0000 
 
+
 ; Set video mode
 mov ah,0x00
 mov al,0x03 ; 80x25 text mode
@@ -117,6 +118,7 @@ execute_command:
     mov di,phi_phi_cmd
     call strcmp
     jc phi_phi_cmd_dis
+
     ; If no match, it's an error
     jmp error
 
@@ -192,6 +194,7 @@ phi_phi_cmd_dis:
     call print_string
     jmp cmd_input
 
+
 print_string:
     mov ah, 0x0E ; Print character
     mov bh, 0x0 ; Set page
@@ -246,4 +249,4 @@ phi_msg: db 10,13,\
 
 cmds: times 64 db 0 ; Make space for 64 characters of input
 
-times 2048-($-$$) db 0
+times 4096-($-$$) db 0 

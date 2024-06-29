@@ -1,3 +1,4 @@
+;boot.asm
 org 0x7C00  ; Origin of Bootloader
 
 ; Load filetable to 0x1000:0x0 from sector 2
@@ -12,7 +13,7 @@ mov cl, 0x02  ; File table at sector 2
 
 read_filetable:
     mov ah, 0x02  ; BIOS read sector function
-    mov al, 32  ; Number of sectors to read
+    mov al, 64  ; Number of sectors to read
     int 0x13  ; Disk read interrupt
     jc read_filetable  ; Retry if there's an error
 
@@ -28,7 +29,7 @@ mov cl, 0x03  ; Kernel at sector 3
 
 read_kernel:
     mov ah, 0x02  ; BIOS read sector function
-    mov al, 32  ; Number of sectors to read
+    mov al, 64  ; Number of sectors to read
     int 0x13  ; Disk read interrupt
     jc read_kernel  ; Retry if there's an error
 

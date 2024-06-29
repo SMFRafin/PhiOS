@@ -1,6 +1,7 @@
 ;filetable.asm
 org 0x0000
 
+
 ; Set video mode
 mov ah, 0x00 ; Set video mode
 mov al, 0x03 ; 80x25 text mode

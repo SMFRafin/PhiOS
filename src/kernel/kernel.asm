@@ -14,7 +14,7 @@ int 0x10
 
 ; Print kernel messages
 start:
-    mov si, kernel_msg1
+    mov si, kernel_msg
     call print_string
     mov si, help_msg
     call print_string
@@ -188,7 +188,7 @@ version:
     jmp cmd_input
 
 phi_phi_cmd_dis:
-    mov si,phi_msg1
+    mov si,phi_msg
     call print_string
     jmp cmd_input
 
@@ -208,9 +208,10 @@ print_done:
     ret
 
 ;Data and variables
-kernel_msg1 db ' _         _   __',10,13
-kernel_msg2 db '|_) |_  o / \ (_  ',10,13
-kernel_msg3 db '|   | | | \_/ __) ',10,13,0
+kernel_msg: db ' _         _   __',10,13
+            db '|_) |_  o / \ (_  ',10,13
+            db '|   | | | \_/ __) ',10,13,0
+
 help_msg db 10,13,'type phi -help for list of commands',10,13, 0
 cmd_prompt db 10,13,'|>:', 0
 reboot_cmd db 'reboot', 0
@@ -221,6 +222,7 @@ help_cmd db 'phi -help', 0
 version_cmd db 'phi -v', 0
 phi_phi_cmd db 'phi -phi',0
 invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
+
 help_info:
     db 10,13,'reboot - Reboot the system',10,13
     db 'dirs - File table',10,13
@@ -228,20 +230,20 @@ help_info:
     db 'help - Help',10,13
     db 'ret - Return to home',10,13
     db 'ls - List files',10,13
-    db 'phi -v - Version',10,13
-    db 'phi -phi - Display PhiOS logo',0
+    db 'phi -v - Version',10,13,0
 
-phi_msg1 db 10,13,\
+phi_msg: db 10,13,\
             '       :===+@@@@+===-',10,13      
-phi_msg2 db '     :-=+***@@@@*+++=-:',10,13      
-phi_msg3 db '  =%@@%+:. .@@@@:  :=%@@#=',10,13   
-phi_msg4 db ' %@@@#     .@@@@:     #@@@%',10,13  
-phi_msg5 db '=@@@@-     .@@@@:     -@@@@+       PhiOS - 0.0.1',10,13 
-phi_msg6 db '+@@@@:     .@@@@:     :@@@@+       Created by: SMF',10,13 
-phi_msg7 db '.@@@@*     .@@@@:     +@@@@.',10,13 
-phi_msg8 db ' .*@@@#-   .@@@@:   :*@@@*.',10,13  
-phi_msg9 db '    :=+*#***@@@@#**##*=:',10,13          
-phi_msg11 db '      :===+@@@@+===-',10,13,0        
+         db '     :-=+***@@@@*+++=-:',10,13      
+         db '  =%@@%+:. .@@@@:  :=%@@#=',10,13   
+         db ' %@@@#     .@@@@:     #@@@%',10,13  
+         db '=@@@@-     .@@@@:     -@@@@+       PhiOS - 0.0.1',10,13 
+         db '+@@@@:     .@@@@:     :@@@@+       Created by: SMF',10,13 
+         db '.@@@@*     .@@@@:     +@@@@.',10,13 
+         db ' .*@@@#-   .@@@@:   :*@@@*.',10,13  
+         db '    :=+*#***@@@@#**##*=:',10,13          
+         db '       :===+@@@@+===-',10,13,0        
+
 cmds: times 64 db 0 ; Make space for 64 characters of input
 
 times 2048-($-$$) db 0

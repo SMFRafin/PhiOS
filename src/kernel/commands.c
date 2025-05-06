@@ -198,6 +198,7 @@ void process_command(const char* input) {
         print_command("run <filename>", "Runs a program");
         print_command("initfs", "Initializes the file system");
         print_command("touch <filename>", "Creates a new text file");
+        print_command("mkdir <dirname>", "Creates a new directory");
         
         
         print_newline();

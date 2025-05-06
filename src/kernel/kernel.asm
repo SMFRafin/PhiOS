@@ -13,7 +13,7 @@ mov bh, 0x00
 mov bl, 0x09
 int 0x10
 
-; Print kernel messages
+; Print kernel messages 
 start:
     mov si, kernel_msg
     call print_string
@@ -22,11 +22,6 @@ start:
 
 jmp cmd_input
 
-;Error function 
-error:
-    mov si, invalid_cmd_msg
-    call print_string
-    jmp cmd_input
 
 ; Get input
 cmd_input:
@@ -119,6 +114,22 @@ execute_command:
     call strcmp
     jc phi_phi_cmd_dis
 
+
+    ;Compare say
+    mov di, say_cmd
+    mov cx, 3  ; Length of "say"
+    call strncmp
+    jc say_command
+
+    ;Compare with time
+    mov di, time_cmd
+    call strcmp
+    jc disp_time
+
+    ;Compare with shutdown
+    mov di,shutdown_cmd
+    call strcmp
+    jc shutdown
     ; If no match, it's an error
     jmp error
 
@@ -148,8 +159,33 @@ strcmp:
     pop si
     ret
 
+strncmp:
+    push si
+    push di
+.loop:
+    mov al, [si]
+    mov bl, [di]
+    cmp al, bl
+    jne .not_equal
+    inc si
+    inc di
+    loop .loop
+    stc  ; Set carry flag (match)
+    jmp .done
+.not_equal:
+    clc  ; Clear carry flag (no match)
+.done:
+    pop di
+    pop si
+    ret
+
 reboot:
     jmp 0xFFFF:0x0000 ; Reset vector
+
+shutdown:
+    mov ax, 0x2000 ; 
+    mov dx,0x604   ;
+    out dx,ax
 
 ; Clear screen    
 clear_screen:
@@ -194,6 +230,29 @@ phi_phi_cmd_dis:
     call print_string
     jmp cmd_input
 
+say_command:
+    mov si, cmds
+    add si, 4  ; Skip "say "
+    call print_string
+    call print_newline
+    jmp cmd_input
+
+disp_time:
+    
+
+;Error function 
+error:
+    mov si, invalid_cmd_msg
+    call print_string
+    jmp cmd_input
+
+print_newline:
+    mov ah, 0x0E
+    mov al, 0x0D
+    int 0x10
+    mov al, 0x0A
+    int 0x10
+    ret
 
 print_string:
     mov ah, 0x0E ; Print character
@@ -224,7 +283,10 @@ cls_cmd db 'cls', 0
 help_cmd db 'phi -help', 0
 version_cmd db 'phi -v', 0
 phi_phi_cmd db 'phi -phi',0
+shutdown_cmd db 'shutdown',0
+say_cmd db 'say',0
 invalid_cmd_msg db 10,13,'Invalid Command',10,13,0
+time_cmd db 'time',0
 
 help_info:
     db 10,13,'reboot - Reboot the system',10,13
@@ -233,7 +295,12 @@ help_info:
     db 'help - Help',10,13
     db 'ret - Return to home',10,13
     db 'ls - List files',10,13
-    db 'phi -v - Version',10,13,0
+    db 'phi -v - Version',10,13,
+    db 'phi -phi - About',10,13
+    db 'calc - Calculator',10,13
+    db 'say - Echo',10,13
+    db 'shutdown - Shutdown the system',10,13,0
+
 
 phi_msg: db 10,13,\
             '       :===+@@@@+===-',10,13      
@@ -248,5 +315,6 @@ phi_msg: db 10,13,\
          db '       :===+@@@@+===-',10,13,0        
 
 cmds: times 64 db 0 ; Make space for 64 characters of input
+
 
 times 4096-($-$$) db 0 

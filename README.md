@@ -10,9 +10,9 @@ PhiOS is a simple CLI 16-bit operating system.
 2. Use the Makefile to build
     ```bash
     make
-3. Run build.sh
+3. Run the OS
    ```bash
-   sh build.sh
+   make run
 
 # References:
 https://www.youtube.com/watch?v=5FnrtmJXsdM&list=PLT7NbkyNWaqajsw8Xh7SP9KJwjfpP8TNX

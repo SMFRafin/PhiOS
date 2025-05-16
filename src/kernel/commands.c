@@ -21,6 +21,7 @@ void shutdown() {
     );
 }
 
+
 void print_command(const char* cmd, const char* desc) {
     print_string(" ");
     print_string(cmd);
@@ -52,13 +53,106 @@ void init_file_system() {
 }
 
 void create_file(const char* filename, uint8_t type) {
-    // Create a new file
-    if (fs_create(filename, type) != FS_SUCCESS) {
-        print_string("Error creating file\n");
+    int result=fs_create(filename,type);
+    if(result<0)
+    {
+        print_string("Error creating file");
         return;
     }
-
     print_string("File created successfully\n");
+}
+
+void delete_file(const char* filename)
+{
+    if(fs_delete(filename)!=FS_SUCCESS)
+    {
+        print_string("Error deleteing file");
+        return;
+    }
+    print_string("File deteled");
+}
+
+void write_to_file(const char* filename, const char* content) {
+    int handle = fs_open(filename, 1); // Mode 1 = write mode
+    
+
+    if (handle < 0) {
+        int result = fs_create(filename, FILE_TYPE_TEXT);
+        if (result < 0) {
+            print_string("Error creating file\n");
+            return;
+        }
+        
+        handle = fs_open(filename, 1);
+        if (handle < 0) {
+            print_string("Error opening file\n");
+            return;
+        }
+    }
+    
+    // Write content to the file
+    int bytes_written = fs_write(handle, content, strlen(content));
+    if (bytes_written < 0) {
+        print_string("Error writing to file\n");
+        fs_close(handle);
+        return;
+    }
+    
+    // Close the file
+    fs_close(handle);
+    
+    print_string("Successfully wrote ");
+    char num_str[8];
+    int_to_string(bytes_written, num_str);
+    print_string(num_str);
+    print_string(" bytes to ");
+    print_string(filename);
+    print_newline();
+}
+
+
+void read_from_file(const char* filename) {
+    // Open the file for reading
+    int handle = fs_open(filename, 0); // Mode 0 = read mode
+    if (handle < 0) {
+        print_string("Error opening file for reading\n");
+        return;
+    }
+    
+    // Get file size
+    int file_size = fs_get_size(filename);
+    if (file_size < 0) {
+        print_string("Error getting file size\n");
+        fs_close(handle);
+        return;
+    }
+    
+
+    char buffer[MAX_FILE_SIZE];
+    if (file_size > MAX_FILE_SIZE - 1) {
+        print_string("File too large to read\n");
+        fs_close(handle);
+        return;
+    }
+    
+    // Read file content
+    int bytes_read = fs_read(handle, buffer, file_size);
+    if (bytes_read < 0) {
+        print_string("Error reading from file\n");
+        fs_close(handle);
+        return;
+    }
+    
+    // Null-terminate the buffer to make it a valid string
+    buffer[bytes_read] = '\0';
+    
+    // Close the file
+    fs_close(handle);
+    
+    // Display file content
+    print_string("\n--- Begin file content ---\n");
+    print_string(buffer);
+    print_string("\n--- End file content ---\n");
 }
 
 void print_phi_logo() {
@@ -198,7 +292,12 @@ void process_command(const char* input) {
         print_command("run <filename>", "Runs a program");
         print_command("initfs", "Initializes the file system");
         print_command("touch <filename>", "Creates a new text file");
+        print_command("write <filename> <content>", "Writes content to a file");
+        print_command("read <filename>", "Reads content from a file");
         print_command("mkdir <dirname>", "Creates a new directory");
+        print_command("rm <filename>", "Deletes the file");
+        print_command("rmdir <directory name>", "Deletes the directory");
+        print_command("cd <directory name>", "Change directory");
         
         
         print_newline();
@@ -227,14 +326,76 @@ void process_command(const char* input) {
         const char* filename = input + 6; // skip "touch "
         create_file(filename, FILE_TYPE_TEXT);
     }
+    else if (strncmp(input, "write", 5) == 0) {
+        // Check if there's at least one space after "write"
+        char* first_space = strchr(input + 5, ' ');
+        if (first_space == NULL) {
+            print_string("\nUsage: write <filename> content\n");
+            return;
+        }
+        
+        // Look for the second space that separates filename and content
+        char* second_space = strchr(first_space + 1, ' ');
+        if (second_space == NULL) {
+            print_string("\nUsage: write <filename> content\n");
+            return;
+        }
+        
+        // Temporarily null-terminate to extract the filename
+        *second_space = '\0';
+        char* filename = first_space + 1;
+        char* content = second_space + 1;
+        
+        // Call the write function
+        write_to_file(filename, content);
+        
+        // Restore the space if needed
+        *second_space = ' ';
+    }
+
+    else if (strncmp(input, "read", 4) == 0) {
+        const char* filename = input + 5; // skip "read "
+        read_from_file(filename);
+    }
     else if (strncmp(input,"mkdir",5)==0)
     {
         const char* dirname = input + 6; // skip "mkdir "
-        if (fs_mkdir(dirname) == FS_SUCCESS) {
-            print_string("\nDirectory created successfully\n");
-        } else {
+        int result=fs_mkdir(dirname);
+        if(result<0)
+        {
             print_string("\nError creating directory\n");
         }
+        else{
+            print_string("\nDirectory created\n");
+        }
+    }
+
+    else if(strncmp(input,"rmdir",5)==0)
+    {
+        const char* dirname = input + 6; // skip "rmdir "
+        if (fs_rmdir(dirname) == FS_SUCCESS) {
+            print_string("\nDirectory removed successfully\n");
+        } else {
+            print_string("\nError removing directory\n");
+        }
+    }
+    else if(strncmp(input,"cd",2)==0)
+    {
+        const char* dirname=input+3;
+        if(fs_chdir(dirname)!=FS_SUCCESS)
+        {
+            print_string("\nError changing directory\n");
+        }
+        else{
+            print_string("\nChanged Directory to: ");
+            print_string(current_path);
+            print_newline();
+        }
+    }
+    else if(strncmp(input,"rm",2)==0)
+    {
+        const char* filename=input+3;
+        delete_file(filename);
     }
     else if (strcmp(input, "exit") == 0) {
         print_string("\nExiting...\n");

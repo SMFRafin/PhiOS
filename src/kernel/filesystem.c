@@ -6,6 +6,7 @@
 
 #undef fs
 #undef handles
+char current_path[MAX_PATH_LENGTH] = "/";
 
 filesystem_t* fs = (filesystem_t*)0x20000;  // File system metadata at 0x20000
 file_handle_t handles[MAX_FILES];
@@ -33,6 +34,14 @@ char* strcpy(char* dest, const char* src) {
     return original;
 }
 
+char *strcat(char* dest, const char* src) {
+    char* original = dest;
+    while (*dest) {
+        dest++;
+    }
+    while ((*dest++ = *src++));
+    return original;
+}
 /* Custom implementation of memcpy */
 void* memcpy(void* dest, const void* src, uint32_t count) {
     unsigned char* d = (unsigned char*)dest;
@@ -203,9 +212,7 @@ static void fs_mark_sectors(uint16_t start, uint16_t count, int used) {
 
 /* Get current date in packed format (YYYYYYYMMMMDDDDD) */
 void fs_get_date(uint16_t* date) {
-    // For simplicity, we'll just use a hard-coded date
-    // In a real system, this would query the system clock
-    *date = (20 << 9) | (5 << 5) | 7;  // May 7, 2020
+    *date = (25 << 9) | (5 << 5) | 10;  // May 7, 2020
 }
 
 /* Create a new file */
@@ -399,9 +406,6 @@ int fs_write(int handle, const void* buffer, uint16_t size) {
                 // Update file entry
                 entry->start_sector = start_sector;
             } else {
-                // Expand existing allocation
-                // This simple implementation doesn't support expanding files
-                // In a real file system, we would need to handle fragmentation
                 return FS_ERROR_DISK_FULL;
             }
         }
@@ -549,14 +553,39 @@ int fs_get_free_space() {
 int fs_mkdir(const char* dirname) {
     return fs_create(dirname, FILE_TYPE_DIRECTORY);
 }
-
-/* Change current directory */
+void fs_init_path(void) {
+    strcpy(current_path, "/");
+}
 int fs_chdir(const char* dirname) {
-    // For simplicity, we're not implementing full directory traversal
-    // This is just a placeholder for now
-    
     if (strcmp(dirname, "..") == 0) {
         // Go up one level
+        if (strcmp(current_path, "/") != 0) {
+            // We're not at root, so we need to go up
+            
+            // Find the last slash in the path
+            int i = strlen(current_path) - 1;
+            
+            // Skip the trailing slash if it exists
+            if (current_path[i] == '/') {
+                i--;
+            }
+            
+            // Find the previous slash
+            while (i >= 0 && current_path[i] != '/') {
+                i--;
+            }
+            
+            // Cut the path at this point
+            if (i >= 0) {
+                current_path[i+1] = '\0';
+                
+                // If we're back at root, make sure path is "/"
+                if (i == 0) {
+                    current_path[1] = '\0';
+                }
+            }
+        }
+        
         current_directory = -1;  // Back to root for now
         return FS_SUCCESS;
     }
@@ -571,7 +600,16 @@ int fs_chdir(const char* dirname) {
         return FS_ERROR_NOT_FOUND;
     }
     
+    // Update current directory
     current_directory = index;
+    
+    // Update path
+    if (strcmp(current_path, "/") != 0) {
+        // Only add slash if we're not at root
+        strcat(current_path, "/");
+    }
+    strcat(current_path, dirname);
+    
     return FS_SUCCESS;
 }
 

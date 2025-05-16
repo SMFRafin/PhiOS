@@ -10,7 +10,7 @@
 #define MAX_FILE_SIZE 4096  // 4KB per file maximum
 #define SECTOR_SIZE 512
 #define FILE_SYSTEM_SIZE (64 * SECTOR_SIZE)  // 32KB total file system size
-
+#define MAX_PATH_LENGTH 256
 /* File types */
 #define FILE_TYPE_NONE 0
 #define FILE_TYPE_BINARY 1
@@ -64,7 +64,7 @@ typedef struct {
 /* Extern declarations */
 extern filesystem_t* fs; // Declare fs as extern
 extern file_handle_t handles[MAX_FILES]; // Declare handles as extern
-
+extern char current_path[MAX_PATH_LENGTH];
 /* Function prototypes */
 int fs_init();                                   // Initialize file system
 int fs_format();                                 // Format file system
@@ -84,9 +84,11 @@ int fs_get_free_space();                         // Get free space in bytes
 int fs_mkdir(const char* dirname);               // Create a directory
 int fs_chdir(const char* dirname);               // Change directory
 int fs_rmdir(const char* dirname);               // Remove directory
+void fs_get_current_path(char* path_buffer);
+void fs_init_path(void);
 
 /* Helper functions */
 void fs_get_date(uint16_t* date);                // Get current date in packed format
 int fs_find_file(const char* filename);          // Find file by name, returns index
-
+void int_to_string(int value, char* str);
 #endif /* FILESYSTEM_H */

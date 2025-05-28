@@ -18,69 +18,7 @@ static int current_directory = -1;  // -1 is root directory
 
 #define NULL ((void*)0)
 
-/* Custom implementation of memset */
-void* memset(void* dest, int value, uint32_t count) {
-    unsigned char* ptr = (unsigned char*)dest;
-    while (count--) {
-        *ptr++ = (unsigned char)value;
-    }
-    return dest;
-}
 
-/* Custom implementation of strcpy */
-char* strcpy(char* dest, const char* src) {
-    char* original = dest;
-    while ((*dest++ = *src++));
-    return original;
-}
-
-char *strcat(char* dest, const char* src) {
-    char* original = dest;
-    while (*dest) {
-        dest++;
-    }
-    while ((*dest++ = *src++));
-    return original;
-}
-/* Custom implementation of memcpy */
-void* memcpy(void* dest, const void* src, uint32_t count) {
-    unsigned char* d = (unsigned char*)dest;
-    const unsigned char* s = (const unsigned char*)src;
-    while (count--) {
-        *d++ = *s++;
-    }
-    return dest;
-}
-
-/* Custom implementation of int_to_string */
-void int_to_string(int value, char* str) {
-    char buffer[12]; // Enough for 32-bit integers
-    int i = 0;
-    int is_negative = 0;
-
-    if (value < 0) {
-        is_negative = 1;
-        value = -value;
-    }
-
-    do {
-        buffer[i++] = (value % 10) + '0';
-        value /= 10;
-    } while (value > 0);
-
-    if (is_negative) {
-        buffer[i++] = '-';
-    }
-
-    buffer[i] = '\0';
-
-    // Reverse the string
-    int j;
-    for (j = 0; j < i; j++) {
-        str[j] = buffer[i - j - 1];
-    }
-    str[j] = '\0';
-}
 
 /* Initialize the file system */
 int fs_init() {
@@ -589,6 +527,14 @@ int fs_chdir(const char* dirname) {
         current_directory = -1;  // Back to root for now
         return FS_SUCCESS;
     }
+
+    if(strcmp(dirname,"~")==0)
+    {
+        // Go to home directory
+        strcpy(current_path, "/");
+        current_directory = -1;  // Back to root
+        return FS_SUCCESS;
+    }
     
     int index = fs_find_file(dirname);
     if (index < 0) {
@@ -632,4 +578,38 @@ int fs_rmdir(const char* dirname) {
     
     // Delete the directory (uses same logic as deleting a file)
     return fs_delete(dirname);
+}
+
+int fs_rename(const char* oldname, const char* newname)
+{
+    // Check if oldname is valid
+    if (strlen(oldname) == 0 || strlen(oldname) > MAX_FILENAME_LENGTH - 1) {
+        return FS_ERROR_INVALID_NAME;
+    }
+    // Check if newname is valid
+    if (strlen(newname) == 0 || strlen(newname) > MAX_FILENAME_LENGTH - 1) {
+        return FS_ERROR_INVALID_NAME;
+    }
+    // Check if file already exists
+    if (fs_find_file(newname) >= 0) {
+        return FS_ERROR_NAME_TAKEN;
+    }
+    // Find the file
+    int index = fs_find_file(oldname);
+    if (index < 0) {
+        return index;  // Error code
+    }
+    // Check if file is open
+    for (int i = 0; i < MAX_FILES; i++) {
+        if (handles[i].is_open && handles[i].entry_index == index) {
+            return FS_ERROR_PERMISSION;  // Can't rename open file
+        }
+    }
+    // Rename the file
+    file_entry_t* entry = &fs->entries[index];
+    strcpy(entry->filename, newname);
+    // Update file system metadata
+    fs_get_date(&entry->modified_date);
+    return FS_SUCCESS;
+    return 0;
 }

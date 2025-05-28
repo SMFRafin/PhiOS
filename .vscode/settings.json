@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.dbclient-js": "javascript",
+        "*.java": "java",
+        "print.h": "c",
+        "filesystem.h": "c",
+        "stdint.h": "c",
+        "stdint-gcc.h": "c",
+        "cstdio": "c"
+    }
+}

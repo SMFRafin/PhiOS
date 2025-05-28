@@ -35,7 +35,7 @@ build/PhiOS.bin: build/boot.bin build/filetable.bin build/kernel.bin
 	dd if=build/kernel.bin of=build/PhiOS.bin conv=notrunc bs=512 seek=2
 
 run: build/PhiOS.bin
-	qemu-system-i386 -fda build/PhiOS.bin -boot a
+	qemu-system-i386 -m 64 -fda build/PhiOS.bin -boot a -vga std
 
 clean:
 	rm -f build/*.bin build/*.o

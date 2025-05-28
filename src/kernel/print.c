@@ -1,4 +1,5 @@
 #include "print.h"
+#include "string.h"
 
 // Global variables to track cursor position
 int current_x = 0;

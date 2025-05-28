@@ -292,6 +292,7 @@ void process_command(const char* input) {
         print_command("run <filename>", "Runs a program");
         print_command("initfs", "Initializes the file system");
         print_command("touch <filename>", "Creates a new text file");
+        print_command("rnm <oldname> <newname>", "Creates a new text file");
         print_command("write <filename> <content>", "Writes content to a file");
         print_command("read <filename>", "Reads content from a file");
         print_command("mkdir <dirname>", "Creates a new directory");
@@ -396,6 +397,40 @@ void process_command(const char* input) {
     {
         const char* filename=input+3;
         delete_file(filename);
+    }
+
+    else if(strncmp(input,"rnm",3)==0)
+    {
+        // Check if there's at least one space after "rnm"
+        char* first_space = strchr(input + 3, ' ');
+        if (first_space == NULL) {
+            print_string("\nUsage: rnm <oldname> <newname>\n");
+            return;
+        }
+        
+        // Look for the second space that separates oldname and newname
+        char* second_space = strchr(first_space + 1, ' ');
+        if (second_space == NULL) {
+            print_string("\nUsage: rnm <oldname> <newname>\n");
+            return;
+        }
+        
+        // Temporarily null-terminate to extract the old and new names
+        *second_space = '\0';
+        char* oldname = first_space + 1;
+        char* newname = second_space + 1;
+        
+        // Call the rename function
+        int result = fs_rename(oldname, newname);
+        
+        // Restore the space if needed
+        *second_space = ' ';
+        
+        if (result == FS_SUCCESS) {
+            print_string("\nFile renamed successfully\n");
+        } else {
+            print_string("\nError renaming file\n");
+        }
     }
     else if (strcmp(input, "exit") == 0) {
         print_string("\nExiting...\n");

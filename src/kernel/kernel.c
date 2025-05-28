@@ -1,13 +1,14 @@
 #include "print.h"
 #include "input.h"
 #include "commands.h"
-#include "filesystem.h" // Add this include
+#include "filesystem.h" 
+
 
 
 void kernel_main() {
+
     set_video_mode();
     clear_screen();
-
     // Initialize the path to root
     fs_init_path();
     print_string("  _         _   __\n");
